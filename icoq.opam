@@ -1,5 +1,6 @@
 opam-version: "1.2"
 maintainer: "palmskog@gmail.com"
+version: "dev"
 
 homepage: "http://cozy.ece.utexas.edu/icoq/"
 dev-repo: "https://github.com/proofengineering/icoq.git"
@@ -8,10 +9,11 @@ license: "Proprietary"
 
 build: [ "./configure" "%{lib}%/icoq" ]
 depends: [
-  "coq" { = "8.5.3~depends" }
-  "coq-ast" { = "dev }
-  "coq-depends" { = "dev" }
+  "coq" {= "8.5.3~depends" }
+  "coq-ast" {= "dev" }
+  "coq-depends" {= "dev" }
 ]
-
-tags: [ "keyword:icoq" ]
+tags: [
+  "keyword:icoq"
+]
 authors: [ "Ahmet Celik <>" "Karl Palmskog <>" "Milos Gligoric <>" ]
