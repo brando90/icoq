@@ -11,14 +11,7 @@ COQ_PROJECT_FILE="_CoqProject"
 CMD_GRAPHDIFF="GRAPHDIFF"
 CMD_FULL="FULL"
 CMD_GRAPHNEW="GRAPHNEW"
-TOOL_JAR="dpdgraph-parser-1.0-SNAPSHOT.jar"
-
-PVERDI_REVS="a245797dd492ce45eb7a6604691726d5d2e0159e\
-             ed067f69d19d2a11074eb5e6ce2547ba0785215b\
-             3bccaab8b8ff723aaf02f78648d5965af1aa3a12\
-             98fa1d5d31d9ca87cee5a1f5e363f58c4b587ad3\
-             dc88c4a5fd7d90b5bb48e583bd8286097f983f81"
-PVERDI_URL="https://github.com/ahmet-celik/pverdi.git"
+: "${TOOL_JAR:=dpdgraph-parser.jar}"
 
 # ----------
 # Functions
@@ -33,7 +26,7 @@ function icoq.project.make() {
         local exports="${1}"; shift
         local flags="${1}"; shift
 
-        local cmd="java -cp ${THIS_DIR}/${TOOL_JAR} \
+        local cmd="java -cp ${TOOL_JAR} \
         ${ICOQ_MAIN_CLASS} \
         -root "${repo}" \
         -configCommand "${config_command}" \
@@ -58,7 +51,7 @@ function icoq.project.select() {
         local exports="${1}"; shift
         local flags="${1}"; shift
 
-        local cmd="java -cp ${THIS_DIR}/${TOOL_JAR} \
+        local cmd="java -cp ${TOOL_JAR} \
         ${ICOQ_MAIN_CLASS} \
         -root "${repo}" \
         -configCommand "${config_command}" \
