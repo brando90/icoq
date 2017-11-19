@@ -7,6 +7,7 @@ dev-repo: "https://github.com/proofengineering/icoq.git"
 bug-reports: "https://github.com/proofengineering/icoq/issues"
 license: "Proprietary"
 
+available: [ ocaml-version >= "4.02.3" ]
 build: [ "./configure" "%{lib}%/icoq" ]
 depends: [
   "coq" {= "8.5.3~depends" }

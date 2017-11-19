@@ -1,38 +1,27 @@
-A. INSTALL
-You have to setup OPAM first.
+iCoq
+====
 
-1. Install Ocaml (>= 4.05.0) and Opam
-(https://opam.ocaml.org/doc/Install.html).  After the installation is
-done, setup opam by executing the following commands:
+iCoq is a regression proof selection tool for Coq.
 
-   $ opam switch 4.05.0 # opam switch create 4.05.0
-   $ eval `opam config env`
+Requirements
+------------
 
-2. Add the iCoq repo:
+- [`Coq 8.5.3`](https://github.com/proofengineering/coq) (modified version with `coqdigest` tool and proof-checking dependency extension)
+- [`coq-ast`](https://github.com/proofengineering/coq-ast)
+- [`coq-depends`](https://github.com/proofengineering/coq-depends)
 
-   $ opam repo add proofengineering-dev http://opam-dev.proofengineering.org
+Installation
+------------
 
-3. Install Coq 8.5.3:
+We recommend installing iCoq via [OPAM](http://opam.ocaml.org/doc/Install.html), which will automatically build and install all its dependencies:
+```
+opam repo add proofengineering-dev http://opam-dev.proofengineering.org
+opam install icoq
+```
 
-   $ opam pin add coq 8.5.3~depends
+Usage
+-----
 
-4. Install coq-ast and coq-depends:
-
-   $ opam install coq-ast coq-depends
-
-5. Install mathcomp:
-
-   $ opam install coq-mathcomp-ssreflect
-
-Additionally, Java 8 has to be installed and Java executable needs to
-be on the PATH.
-
-B. EXAMPLE
-
-You can use following command to run Verdi with iCoq.  (Note that we
-use a version of Verdi that is annotated with "Proof using."
-annotations; this version is available on GitHub.)
-
-  $ ./tool.sh --icoq
-
-The results for each revision will be in the "results" folder.
+```
+icoq
+```
