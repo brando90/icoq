@@ -1,0 +1,11 @@
+doc: [
+  "README.md" {"README.md"}
+]
+bin: [
+  "icoq" {"icoq"}
+  "icoq-runner" {"icoq-runner"}
+]
+lib: [
+  "icoq.opam" {"opam"}
+  "dpdgraph-parser.jar" {"dpdgraph-parser.jar"}
+]

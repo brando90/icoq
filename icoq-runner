@@ -1,0 +1,285 @@
+#!/bin/bash
+
+THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+# ----------
+# Global.
+ICOQ_MAIN_CLASS="edu.utexas.ece.icoq.Icoq"
+PROOF_USING_CLASS="edu.utexas.ece.icoq.ProofUsingDecorator"
+COQ_PROJECT_FILE="_CoqProject"
+
+CMD_GRAPHDIFF="GRAPHDIFF"
+CMD_FULL="FULL"
+CMD_GRAPHNEW="GRAPHNEW"
+TOOL_JAR="dpdgraph-parser-1.0-SNAPSHOT.jar"
+
+PVERDI_REVS="a245797dd492ce45eb7a6604691726d5d2e0159e\
+             ed067f69d19d2a11074eb5e6ce2547ba0785215b\
+             3bccaab8b8ff723aaf02f78648d5965af1aa3a12\
+             98fa1d5d31d9ca87cee5a1f5e363f58c4b587ad3\
+             dc88c4a5fd7d90b5bb48e583bd8286097f983f81"
+PVERDI_URL="https://github.com/ahmet-celik/pverdi.git"
+
+# ----------
+# Functions
+
+function icoq.project.make() {
+        ### Must be called after replacing proofs.
+        ### Configure, compile.
+        local repo="${1}"; shift
+        local results="${1}"; shift
+        local coq_project_file="${1:-"_CoqProject"}"; shift
+        local config_command="${1:-"./configure"}"; shift
+        local exports="${1}"; shift
+        local flags="${1}"; shift
+
+        local cmd="java -cp ${THIS_DIR}/${TOOL_JAR} \
+        ${ICOQ_MAIN_CLASS} \
+        -root "${repo}" \
+        -configCommand "${config_command}" \
+        -outDir "${results}" \
+        -scriptOutDir "${results}" \
+        -command "${CMD_GRAPHNEW}" \
+        -stdout "${results}/stdout" \
+        -stderr "${results}/stderr" \
+        -coqProjectFilename "${coq_project_file}" \
+        -export "${exports}" ${flags}"
+
+        eval $cmd
+}
+
+function icoq.project.select() {
+        ### Must be called after replacing proofs.
+        ### Configure, quick compile, collect deps, and select CoqObjects
+        local repo="${1}"; shift
+        local results="${1}"; shift
+        local coq_project_file="${1:-"_CoqProject"}"; shift
+        local config_command="${1:-"./configure"}"; shift
+        local exports="${1}"; shift
+        local flags="${1}"; shift
+
+        local cmd="java -cp ${THIS_DIR}/${TOOL_JAR} \
+        ${ICOQ_MAIN_CLASS} \
+        -root "${repo}" \
+        -configCommand "${config_command}" \
+        -outDir "${results}" \
+        -scriptOutDir "${results}" \
+        -command "${CMD_GRAPHDIFF}" \
+        -stdout "${results}/stdout" \
+        -stderr "${results}/stderr" \
+        -coqProjectFilename "${coq_project_file}"
+        -export "${exports}" ${flags}"
+        eval $cmd
+}
+
+function icoq.make_with_icoq() {
+        ### Runs our approach that runs only things that are affected
+        ### by changes.
+        local repo="${1}"; shift
+        local results_dir="${1}"; shift
+        local coqmake="${1}"; shift
+        local configure="${1}"; shift
+        local exports="${1}"; shift
+        local revision="${1}"; shift
+        local mode="${1}"; shift
+        local ix="${1}"; shift
+
+        # Get directory with dependencies.
+        local deps="${repo}-deps"
+
+        local results="${results_dir}/prove-log.txt"
+
+        local flags="-timer -debug"
+        if [ "$mode" == "$CIRUN_MODE" ]; then
+                flags="${flags} -ci"
+        fi
+
+        # Restore dependencies.
+        if [ "$mode" != "plain" ]; then
+                icoq.dependencies_cp "${deps}" "${repo}"
+        fi
+        if [ "${ix}" -eq 1 ]; then
+                echo "Building..."
+                echo "__TIME_BEGIN=$(date +%s)" &> "${results}"
+                icoq.project.make "${THIS_DIR}/${repo}" "${THIS_DIR}/${results_dir}" "$coqmake" "$configure" "$exports" "${flags}" &>> "${results}"
+                echo "__TIME_END=$(date +%s)" &>>  "${results}"
+        else
+                # Collect dependencies.
+                echo "Collecting and proving..."
+                echo "__TIME_BEGIN=$(date +%s)" &> "${results}"
+                icoq.project.select "${THIS_DIR}/${repo}" "${THIS_DIR}/${results_dir}" "$coqmake" "$configure" "$exports" "${flags}" &>> "${results}"
+                echo "__TIME_END=$(date +%s)" &>>  "${results}"
+        fi
+
+        # Save dependencies after the run.
+        if [ "$mode" != "plain" ]; then
+                icoq.dependencies_cp "${repo}" "${deps}" "${revision}"
+        fi
+}
+
+function icoq.dependencies_cp() {
+        ### Copies dependencies from one directory/path to another,
+        ### without affecting any other files in those directories.
+        local src_path="${1}"; shift
+        local dst_path="${1}"; shift
+        local commit_msg="${1}"; shift
+
+        if [ -d "${src_path}" ]; then
+                # TODO: Extract this into a function.
+                for dot_deps in $(find ${src_path} -type f -name ".coq-deps"); do
+                        local path=${dot_deps/"${src_path}"/}
+                        path=$(dirname ${path})
+                        local destination="${dst_path}/${path}"
+                        mkdir -p ${destination}
+                        cp -r ${dot_deps} ${destination}
+                done
+                for dot_change in $(find ${src_path} -type f -name ".change"); do
+                        local path=${dot_change/"${src_path}"/}
+                        path=$(dirname ${path})
+                        local destination="${dst_path}/${path}"
+                        mkdir -p ${destination}
+                        cp -r ${dot_change} ${destination}
+                done
+                for script in $(find ${src_path} -type f -name "a.sh"); do
+                        local path=${script/"${src_path}"/}
+                        path=$(dirname ${path})
+                        local destination="${dst_path}/${path}"
+                        mkdir -p ${destination}
+                        cp -r ${script} ${destination}
+                done
+                for comap in $(find ${src_path} -type f -name ".comap"); do
+                        local path=${comap/"${src_path}"/}
+                        path=$(dirname ${path})
+                        local destination="${dst_path}/${path}"
+                        mkdir -p ${destination}
+                        cp -r ${comap} ${destination}
+                done
+                for dot_deps_folder in $(find ${src_path} -type d -name ".deps"); do
+                        local path=${dot_deps_folder/"${src_path}/"/}
+                        local destination="${dst_path}/${path}"
+                        mkdir -p ${destination}
+                        cp -r ${dot_deps_folder}/. ${destination}
+                done
+                for dot_numbers in $(find ${src_path} -type d -name ".numbers"); do
+                        local path=${dot_numbers/"${src_path}/"/}
+                        local destination="${dst_path}/${path}"
+                        mkdir -p ${destination}
+                        cp -r ${dot_numbers}/. ${destination}
+                done
+                for dot_icoq_folder in $(find ${src_path} -type d -name ".icoq"); do
+                        local path=${dot_icoq_folder/"${src_path}/"/}
+                        local destination="${dst_path}/${path}"
+                        rm -rf ${destination}
+                        mkdir -p ${destination}
+                        cp -r ${dot_icoq_folder}/. ${destination}
+                done
+                for dot_ficoq_folder in $(find ${src_path} -type d -name ".ficoq"); do
+                        local path=${dot_ficoq_folder/"${src_path}/"/}
+                        local destination="${dst_path}/${path}"
+                        rm -rf ${destination}
+                        mkdir -p ${destination}
+                        cp -r ${dot_ficoq_folder}/. ${destination}
+                done
+                # If the commit message is given then we commit the
+                # current version of dependencies.  We love keeping
+                # dependencies in the repo, because we can easily
+                # reconstruct dependencies for any revision and we can
+                # also easily find what is modified.
+                if [ "${commit_msg}" != "" ]; then
+                        if [ -d "${dst_path}" ]; then
+                                ( cd ${dst_path}
+                                        if [ ! -d ".git" ]; then
+                                                git init
+                                        fi
+                                        git add -A .
+                                        git commit -m "${commit_msg}" .
+                                ) > /dev/null
+                        fi
+                fi
+        fi
+}
+
+declare -A verdi_to_structtact=(
+        [15be6f61fd5e03a9581399cd8848416f57e471cd]="78fd00ebebbc17bb49b4e61e04ca11de793dbb3e"
+        [06a76847a7f6f85ef544a50a01c9de1f6523dc95]="1d48f2012d3deb8c8b40a4431f424116aeb8c6ad"
+        [687a4eaf4a31fa61630d033fff49eef08a2b7498]="1d48f2012d3deb8c8b40a4431f424116aeb8c6ad"
+        [d4406a1b55b35346fb2bc81b3909243282cdbb8f]="7a12dccdaf1f664a2488e48ccff0428bb46df49a"
+        [8ee9b8565c1a1bf44614f7a9f9f24308c21aed01]="7a12dccdaf1f664a2488e48ccff0428bb46df49a"
+)
+
+declare -A pverdi_to_structtact=(
+        [dc88c4a5fd7d90b5bb48e583bd8286097f983f81]="${verdi_to_structtact[15be6f61fd5e03a9581399cd8848416f57e471cd]}"
+        [98fa1d5d31d9ca87cee5a1f5e363f58c4b587ad3]="${verdi_to_structtact[06a76847a7f6f85ef544a50a01c9de1f6523dc95]}"
+        [3bccaab8b8ff723aaf02f78648d5965af1aa3a12]="${verdi_to_structtact[687a4eaf4a31fa61630d033fff49eef08a2b7498]}"
+        [ed067f69d19d2a11074eb5e6ce2547ba0785215b]="${verdi_to_structtact[d4406a1b55b35346fb2bc81b3909243282cdbb8f]}"
+        [a245797dd492ce45eb7a6604691726d5d2e0159e]="${verdi_to_structtact[8ee9b8565c1a1bf44614f7a9f9f24308c21aed01]}"
+)
+
+function icoq.embed_structtact() {
+        local name="${1}"; shift
+        local repo="${1}"; shift
+        local revision="${1}"; shift
+        if [[ "${name}" == *verdi* ]]; then
+                ( cd "${repo}";
+                        # Generate raft/RaftState.v
+                        if [[ ! -f "raft/RaftState.v" ]]; then
+                                env python script/extract_record_notation.py raft/RaftState.v.rec raft_data > raft/RaftState.v
+                        fi
+                        # Include StructTact as part of Verdi
+                        if [[ "${name}" == verdi ]]; then
+                                local structtact_rev=$(eval "printf \${${name}_to_structtact[${revision}]}")
+                                echo "Using ${structtact_rev} of structtact"
+                                git checkout configure
+                                sed -i 's/^DEPS=(StructTact)/DEPS=()/; s/^DIRS=(/DIRS=(structtact /; s/^\(CANARIES=.*\) "StructTact.*)/\1)/' configure
+                                # Clone if it doesn't exist
+                                if [[ ! -d "structtact" ]]; then
+                                        git clone "https://github.com/uwplse/StructTact" structtact &> /dev/null
+                                fi
+                                ( cd structtact; git checkout ${structtact_rev} &> /dev/null )
+                        fi
+                )
+        fi
+	# Fix coqproject.sh
+	for f in $(find "${repo}" -name coqproject.sh); do
+	    cp -f "${THIS_DIR}/coqproject.sh" "${f}"
+	done
+}
+
+function icoq.icoq() {
+   local repo="repo/pverdi"
+   local results="results/pverdi"
+   local ix=1
+   rm -rf "${repo}"
+   mkdir -p "${repo}"
+   git clone "${PVERDI_URL}" "${repo}" &> /dev/null
+
+   for rev in ${PVERDI_REVS}; do
+           printf "Running ${rev} ...\n"
+           local results_dir="${results}/${rev}"
+           mkdir -p "${results_dir}"
+           ( cd $repo; git checkout "${rev}"; git checkout "." ) &> /dev/null
+           icoq.embed_structtact "pverdi" "${repo}" "${rev}"
+           icoq.make_with_icoq "${repo}" "${results_dir}" "${COQ_PROJECT_FILE}" "./configure" "NAMESPACE_structtact=StructTact" "${rev}" "icoq" "${ix}"
+           let ++ix
+   done
+
+   # Show the results.
+   find "results" -name "*.txt" | xargs grep 'Selected'
+}
+
+# ----------
+# Main.
+
+# if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+        # Option to execute.
+        option="${1}"; shift
+
+        case ${option} in
+        --icoq)
+                icoq.icoq
+                ;;
+        *)
+                echo "Incorrect arguments"
+                ;;
+        esac
+# fi
