@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+ICOQ_TMP=icoq.tmp
+
+rm -f $ICOQ_TMP
+touch $ICOQ_TMP
+
+echo "#!/usr/bin/env bash" >> $ICOQ_TMP
+echo "TOOL_JAR=\"${1}/dpdgraph-parser.jar\" icoq-runner \"\$@\"" >> $ICOQ_TMP
+
+mv $ICOQ_TMP icoq
+chmod a+x icoq
