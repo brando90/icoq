@@ -22,6 +22,16 @@ opam install icoq
 Usage
 -----
 
+iCoq must be pointed at the directory where the `_CoqProject` file for your project resides.
+
+We recommend adding an iCoq task in your `Makefile`, as follows:
 ```
-icoq
+icoq: _CoqProject
+        icoq $(shell pwd) -timer
+```
+Then, you can simply run `make icoq`.
+
+To run iCoq from the command line, go the directory with the `_CoqProject` file and run:
+```
+icoq $PWD
 ```
