@@ -9,7 +9,7 @@ Requirements
 - [`Coq 8.5.3`](https://github.com/proofengineering/coq) (modified version with `coqdigest` tool and proof-checking dependency extension)
 - [`coq-ast`](https://github.com/proofengineering/coq-ast)
 - [`coq-depends`](https://github.com/proofengineering/coq-depends)
-- [`Java 8`](http://www.oracle.com/technetwork/java/javase/overview/java8-2100321.html)
+- [`Java SE 8`](http://www.oracle.com/technetwork/java/javase/overview/index.html) (or later)
 
 Note that for iCoq to be able to avoid checking unaffected proofs inside sections, your `.v` files must have the proper [annotations](https://coq.inria.fr/refman/async-proofs.html) that specify which section assumptions are used in a proof, e.g., `Proof using A_dec`.
 
@@ -36,7 +36,7 @@ icoq: _CoqProject
 ```
 Then, you can simply run `make icoq`.
 
-To run iCoq from the command line, go the directory with the `_CoqProject` file and run:
+To instead run iCoq from the command line, go the directory with the `_CoqProject` file and run:
 ```
 icoq $PWD -timer
 ```
