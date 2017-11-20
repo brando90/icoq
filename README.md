@@ -9,11 +9,14 @@ Requirements
 - [`Coq 8.5.3`](https://github.com/proofengineering/coq) (modified version with `coqdigest` tool and proof-checking dependency extension)
 - [`coq-ast`](https://github.com/proofengineering/coq-ast)
 - [`coq-depends`](https://github.com/proofengineering/coq-depends)
+- [`Java 8`](http://www.oracle.com/technetwork/java/javase/overview/java8-2100321.html)
+
+Note that for iCoq to be able to avoid checking unaffected proofs inside sections, your `.v` files must have the proper [annotations](https://coq.inria.fr/refman/async-proofs.html) that specify which section assumptions are used in a proof, e.g., `Proof using A_dec`.
 
 Installation
 ------------
 
-We recommend installing iCoq via [OPAM](http://opam.ocaml.org/doc/Install.html), which will automatically build and install its dependencies:
+We recommend installing iCoq via [OPAM](http://opam.ocaml.org/doc/Install.html), which will automatically build and install its dependencies (except Java):
 ```
 opam repo add proofengineering-dev http://opam-dev.proofengineering.org
 opam install icoq
