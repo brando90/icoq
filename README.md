@@ -13,18 +13,20 @@ Requirements
 Installation
 ------------
 
-We recommend installing iCoq via [OPAM](http://opam.ocaml.org/doc/Install.html), which will automatically build and install all its dependencies:
+We recommend installing iCoq via [OPAM](http://opam.ocaml.org/doc/Install.html), which will automatically build and install its dependencies:
 ```
 opam repo add proofengineering-dev http://opam-dev.proofengineering.org
 opam install icoq
 ```
+
+Note that we have only tested iCoq with OCaml version 4.02.3 or higher, so this requirement is enforced by the OPAM package.
 
 Usage
 -----
 
 iCoq must be pointed at the directory where the `_CoqProject` file for your project resides.
 
-We recommend adding an iCoq task in your `Makefile`, as follows:
+We recommend adding an iCoq task in your project's `Makefile`, as follows:
 ```
 icoq: _CoqProject
         icoq $(shell pwd) -timer
@@ -33,5 +35,5 @@ Then, you can simply run `make icoq`.
 
 To run iCoq from the command line, go the directory with the `_CoqProject` file and run:
 ```
-icoq $PWD
+icoq $PWD -timer
 ```
