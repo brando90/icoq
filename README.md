@@ -11,7 +11,7 @@ Requirements
 - [`coq-depends`](https://github.com/proofengineering/coq-depends)
 - [`Java SE 8`](http://www.oracle.com/technetwork/java/javase/overview/index.html) (or later)
 
-Note that for iCoq to be able to avoid checking unaffected proofs inside sections, your `.v` files must have the proper [annotations](https://coq.inria.fr/refman/async-proofs.html) that specify which section assumptions are used in a proof, e.g., `Proof using A_dec`.
+Note that for iCoq to be able to avoid checking unaffected proofs inside sections, your `.v` files must have the proper [annotations](https://coq.inria.fr/refman/async-proofs.html) that specify which section assumptions are used in each proof, e.g., `Proof using A_dec`.
 
 Installation
 ------------
@@ -28,7 +28,6 @@ Usage
 -----
 
 iCoq must be pointed at the directory where the `_CoqProject` file for your project resides.
-
 We recommend adding an iCoq task in your project's `Makefile`, as follows:
 ```
 icoq: _CoqProject
