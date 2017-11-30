@@ -9,7 +9,7 @@ if [ ! -f "${TOOL_JAR}" ]; then
         exit 1
 fi
 
-if [ ! -f "${root}/.comap" ]; then
+if [ ! -d "${root}/.icoq" ]; then
         command="GRAPHNEW"
 fi
 
