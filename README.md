@@ -45,7 +45,7 @@ To show debug information about the Coq proof-checking commands run by iCoq, use
 icoq $PWD -timer -debug
 ```
 
-All metadata used by iCoq is stored in the `.icoq` directory in the root of the project. Removing this directory will make iCoq check all proofs in the project from scratch.
+All metadata used by iCoq is stored in the `.icoq` subdirectory of the the directory where the `_CoqProject` file resides. Removing this subdirectory will make iCoq check all proofs in the project from scratch.
 
 Example
 -------
