@@ -1,7 +1,7 @@
 iCoq
 ====
 
-iCoq is a regression proof selection tool for Coq.
+iCoq is a regression proof selection tool for Coq, suitable for use in workflows involving continous integration services, e.g., [Travis CI](https://travis-ci.org).
 
 Requirements
 ------------
