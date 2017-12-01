@@ -47,6 +47,8 @@ icoq $PWD -timer -debug
 
 All metadata used by iCoq is stored in the `.icoq` subdirectory of the the directory where the `_CoqProject` file resides. Removing this subdirectory will make iCoq check all proofs in the project from scratch.
 
+To find out more about the technique used in iCoq, see the [paper](https://doi.org/10.1109/ASE.2017.8115630) in the proceedings of the 2017 Automated Software Engineering conference.
+
 Example
 -------
 
