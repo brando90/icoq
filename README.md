@@ -51,6 +51,7 @@ Example
 -------
 
 Suppose that we have integrated iCoq into the Makefile of a Coq project as above. The first execution of iCoq could then have output as follows:
+```
 $ make icoq
 icoq /path/to/project -timer
 [TIMER] Config               :: 0 ms.
