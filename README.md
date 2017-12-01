@@ -39,3 +39,10 @@ To instead run iCoq from the command line, go the directory with the `_CoqProjec
 ```
 icoq $PWD -timer
 ```
+
+To show debug information about the Coq proof-checking commands run by iCoq, use the `-debug` option, e.g.,
+```
+icoq $PWD -timer -debug
+```
+
+All metadata used by iCoq is stored in the `.icoq` directory in the root of the project. Removing this directory will make iCoq check all proofs in the project from scratch.
