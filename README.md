@@ -67,6 +67,7 @@ Selected num of proofs       :: 276 / 276
 ```
 Suppose we now change a certain function definition on which many proofs depend (directly or indirectly), and then rerun iCoq. We could then get output as follows:
 ```
+$ make icoq
 icoq /path/to/project -timer
 [TIMER] config               :: 0 ms.
 [TIMER] Create new file graph:: 193 ms.
